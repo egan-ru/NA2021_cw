@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#thermal physics lab1
+#course work on Nikolay Aleksandrovich
 import numpy as np
 import matplotlib.pyplot as plt
 import sys, os
@@ -9,10 +9,10 @@ import math
 import time
 
 #used to print debug extras
-NA_DEBUG = 14
+NA_DEBUG = 0
 
 #carrier freq
-CARRIER_FREQ = 10000000000
+CARRIER_FREQ = 10200000000
 
 #set reference signal to nearest neighbor, if zero use freq-based
 NN_ENABLE = 0
@@ -107,6 +107,7 @@ def signaldata_get(scale):
 
     print("lowered period : ", '%.f4' %(samp_lo_time*1000000), " usec")
     print("lowered freq :   ", '%.f4' %(samp_lo_freq/1000000), " MHz")
+    print("samplecount :    ", samplecount)
 
     return (samplecount, samp_lo_freq)
 
@@ -147,7 +148,7 @@ def nearest_neighbor(pnseq, samplecount):
 
 
 """
-solve na_2021 by nearest neighbor method
+solve na_2021 by freq-based method
 @param pnseq        - pn sequence
 @param samplecount  - estimated number of samples
 
@@ -331,7 +332,7 @@ def coherent_accumulation(na_data, pos, ref_spectre):
     #reshape matrix and make fft in every line, then reshape back (for coherent burst accumulation)
     coh_acc_na_array = na_proc_array.T
     for i in range(samplecount):
-        coh_acc_na_array[i] = np.fft.fft(coh_acc_na_array[i])
+        coh_acc_na_array[i] = np.real(np.fft.fft(coh_acc_na_array[i]))
 
     coh_acc_na_array = coh_acc_na_array.T
     coh_acc_na_array = np.abs(coh_acc_na_array)
@@ -356,11 +357,11 @@ def signal_is_present(coh_acc_data, threshold, dbg_num):
         return None
 
     #we should not have lot of peaks with half of lmax amplitude
-    threshold_mid = lmax/4
+    threshold_mid = lmax/2
     cmax = (coh_acc_data > threshold_mid).sum()
-    #if(4 < cmax):
-    #    #we have too wide spectrum
-    #    return None
+    if(4 < cmax):
+        #we have too wide spectrum
+        return None
 
     #we have peak - return it's value and index
     if(11 == NA_DEBUG):
@@ -567,6 +568,6 @@ if __name__ == '__main__':
 
     print("calculation take :", time_passed, "useconds")
 
-    print("NA success")
+    print("\nNA success")
     sys.exit(os.EX_OK)
 
